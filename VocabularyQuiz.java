@@ -70,7 +70,6 @@ public class VocabularyQuiz extends JFrame {
             submitButton.setText("Submit");
             resultLabel.setText("");
     
-            // 移除先前的 ActionListener
             for (ActionListener listener : submitButton.getActionListeners()) {
                 submitButton.removeActionListener(listener);
             }
@@ -95,14 +94,13 @@ public class VocabularyQuiz extends JFrame {
         String correctAnswer = currentWord.getWord().toLowerCase();
     
         if (userAnswer.isEmpty()) {
-            // 使用者尚未輸入答案
+            // 使用者未輸入答案
             resultLabel.setText("<html><font color='red'>Please enter an answer.</font></html>");
         } else {
             if (userAnswer.equals(correctAnswer)) {
                 resultLabel.setText("<html><font color='green'>Correct! Pronunciation: " + currentWord.getPronunciation() + "</font></html>");
                 submitButton.setText("Next Question");
     
-                // 移除先前的 ActionListener，以免重複執行
                 for (ActionListener listener : submitButton.getActionListeners()) {
                     submitButton.removeActionListener(listener);
                 }
