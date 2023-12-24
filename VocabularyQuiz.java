@@ -17,7 +17,8 @@ public class VocabularyQuiz extends JFrame {
     private JTextField inputField;
     private JButton submitButton;
     private JLabel resultLabel;
-    private JComboBox<String> apiSelector; 
+    private JComboBox<String> apiSelector;
+    private JComboBox<String> mainMenu;
 
     public VocabularyQuiz() {
         wordLabel = new JLabel();
@@ -25,30 +26,25 @@ public class VocabularyQuiz extends JFrame {
         submitButton = new JButton("Submit");
         resultLabel = new JLabel();
         apiSelector = new JComboBox<>();
+        mainMenu = new JComboBox<>();
 
         String[] apiOptions = {"API 1", "API 2", "API 3", "API 4", "API 5", "API 6"};
         apiSelector.setModel(new DefaultComboBoxModel<>(apiOptions));
         apiSelector.setSelectedIndex(0);
 
-        apiSelector.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                currentIndex = 0;
-                loadWordsFromJson(); 
-                setNextQuestion(); 
-            }
-        });
-        
+        String[] mainMenuOptions = {"Select Action","View Vocabulary", "Take Quiz"};
+        mainMenu.setModel(new DefaultComboBoxModel<>(mainMenuOptions));
 
-        submitButton.addActionListener(new ActionListener() {
+        mainMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                checkAnswer();
+                handleMainMenuSelection();
             }
         });
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 1, 10, 10));
+        panel.setLayout(new GridLayout(6, 1, 10, 10));
+        panel.add(mainMenu);
         panel.add(apiSelector);
         panel.add(wordLabel);
         panel.add(inputField);
@@ -59,24 +55,54 @@ public class VocabularyQuiz extends JFrame {
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 400);
-        setTitle("Vocabulary Quiz");
+        setTitle("English Vocabulary");
         setLocationRelativeTo(null);
         setVisible(true);
 
-        // 初始載入題庫
         loadWordsFromJson();
         setNextQuestion();
+    }
+
+    private void handleMainMenuSelection() {
+        String selectedAction = (String) mainMenu.getSelectedItem();
+
+        if ("View Vocabulary".equals(selectedAction)) {
+            loadWordsFromJson();
+            showVocabulary(); 
+        } else if ("Take Quiz".equals(selectedAction)) {
+            currentIndex = 0;
+            loadWordsFromJson();
+            setNextQuestion();
+        }
+    }
+
+    private void showVocabulary() {
+        StringBuilder vocabularyText = new StringBuilder("<html><body>");
+
+        for (Word word : words) {
+            vocabularyText.append("<b>").append(word.getWord()).append("</b>: ");
+            for (Definition definition : word.getDefinitions()) {
+                vocabularyText.append(definition.getPartOfSpeech()).append(": ").append(definition.getText()).append("<br>");
+            }
+            vocabularyText.append("<br>");
+        }
+
+        vocabularyText.append("</body></html>");
+
+        JTextPane textPane = new JTextPane();
+        textPane.setContentType("text/html");
+        textPane.setText(vocabularyText.toString());
+        textPane.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(textPane);
+        scrollPane.setPreferredSize(new Dimension(400, 400));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Vocabulary List", JOptionPane.PLAIN_MESSAGE);
     }
 
     private void loadWordsFromJson() {
         try {
             String selectedApi = (String) apiSelector.getSelectedItem();
-            // if (selectedApi == null || selectedApi.equals("Select API")) {
-
-            //     selectedApi = "API 1";
-            //     apiSelector.setSelectedItem(selectedApi);
-            // }
-
             String apiEndpoint = getApiEndpoint(selectedApi);
 
             java.lang.reflect.Type listType = TypeToken.getParameterized(List.class, Word.class).getType();
@@ -90,7 +116,7 @@ public class VocabularyQuiz extends JFrame {
             e.printStackTrace();
         }
     }
-    
+
     private String getApiEndpoint(String apiName) {
         switch (apiName) {
             case "API 1":
@@ -125,7 +151,7 @@ public class VocabularyQuiz extends JFrame {
             submitButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    checkAnswer(); 
+                    checkAnswer();
                 }
             });
         } else {
@@ -134,7 +160,7 @@ public class VocabularyQuiz extends JFrame {
             submitButton.setEnabled(false);
         }
     }
-    
+
     private void checkAnswer() {
         Word currentWord = words.get(currentIndex);
         String userAnswer = inputField.getText().trim().toLowerCase();
