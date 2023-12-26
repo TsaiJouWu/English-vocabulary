@@ -1,5 +1,10 @@
 package BackEnd;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -227,7 +232,7 @@ public class VocabularyQuiz extends JFrame {
         playPronunciationButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                playPronunciation(currentWord.getPronunciation());
+                playPronunciation(currentWord.getWord());
             }
         });
         JPanel buttonPanel = new JPanel();
@@ -256,6 +261,17 @@ public class VocabularyQuiz extends JFrame {
         }
     }
 
+    private void playSound(String soundURL) {
+        try {
+            URL url = new URL(soundURL);
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+            clip.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
     private void openBrowser(String url) {
         try {
             Desktop desktop = Desktop.getDesktop();
