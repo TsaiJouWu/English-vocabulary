@@ -1,13 +1,16 @@
 package BackEnd;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
@@ -34,7 +37,7 @@ public class VocabularyQuiz extends JFrame {
         showAnswerButton = new JButton("Show Answer");
         nextButton = new JButton("Next");
 
-        String[] apiOptions = {"API 1", "API 2", "API 3", "API 4", "API 5", "API 6"};
+        String[] apiOptions = {"CH1", "CH2", "CH3", "CH4", "CH5", "CH6"};
         apiSelector.setModel(new DefaultComboBoxModel<>(apiOptions));
         apiSelector.setSelectedIndex(0);
 
@@ -63,8 +66,8 @@ public class VocabularyQuiz extends JFrame {
 
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(6, 1, 10, 10));
-        panel.add(mainMenu);
         panel.add(apiSelector);
+        panel.add(mainMenu);
         panel.add(wordLabel);
         panel.add(inputField);
         panel.add(submitButton);
@@ -158,17 +161,17 @@ public class VocabularyQuiz extends JFrame {
 
     private String getApiEndpoint(String apiName) {
         switch (apiName) {
-            case "API 1":
+            case "CH1":
                 return "https://raw.githubusercontent.com/AppPeterPan/TaiwanSchoolEnglishVocabulary/main/1%E7%B4%9A.json";
-            case "API 2":
+            case "CH2":
                 return "https://raw.githubusercontent.com/AppPeterPan/TaiwanSchoolEnglishVocabulary/main/2%E7%B4%9A.json";
-            case "API 3":
+            case "CH3":
                 return "https://raw.githubusercontent.com/AppPeterPan/TaiwanSchoolEnglishVocabulary/main/3%E7%B4%9A.json";
-            case "API 4":
+            case "CH4":
                 return "https://raw.githubusercontent.com/AppPeterPan/TaiwanSchoolEnglishVocabulary/main/4%E7%B4%9A.json";
-            case "API 5":
+            case "CH5":
                 return "https://raw.githubusercontent.com/AppPeterPan/TaiwanSchoolEnglishVocabulary/main/5%E7%B4%9A.json";
-            case "API 6":
+            case "CH6":
                 return "https://raw.githubusercontent.com/AppPeterPan/TaiwanSchoolEnglishVocabulary/main/6%E7%B4%9A.json";
             default:
                 return "";
@@ -220,10 +223,46 @@ public class VocabularyQuiz extends JFrame {
         answerPane.setText(answerText.toString());
         answerPane.setEditable(false);
     
-        JOptionPane.showMessageDialog(this, answerPane, "Answer", JOptionPane.PLAIN_MESSAGE);
-    
+        JButton playPronunciationButton = new JButton("Play Pronunciation");
+        playPronunciationButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                playPronunciation(currentWord.getPronunciation());
+            }
+        });
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(playPronunciationButton);
+        buttonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        buttonPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+
+        JPanel dialogPanel = new JPanel();
+        dialogPanel.setLayout(new BoxLayout(dialogPanel, BoxLayout.Y_AXIS));
+        dialogPanel.add(answerPane);
+        dialogPanel.add(Box.createVerticalStrut(10));
+        dialogPanel.add(buttonPanel);
+
+        JOptionPane.showMessageDialog(this, dialogPanel, "Answer", JOptionPane.PLAIN_MESSAGE);
+
         showAnswerButton.setEnabled(false);
         nextButton.setEnabled(true);
+    }
+
+    private void playPronunciation(String wordToPronounce) {
+        try {
+            String pronunciationURL = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=" + wordToPronounce + "&tl=en";
+            openBrowser(pronunciationURL);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openBrowser(String url) {
+        try {
+            Desktop desktop = Desktop.getDesktop();
+            desktop.browse(new URI(url));
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     private void checkAnswer() {
