@@ -1,10 +1,12 @@
+package BackEnd;
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
@@ -19,6 +21,8 @@ public class VocabularyQuiz extends JFrame {
     private JLabel resultLabel;
     private JComboBox<String> apiSelector;
     private JComboBox<String> mainMenu;
+    private JButton showAnswerButton;
+    private JButton nextButton;
 
     public VocabularyQuiz() {
         wordLabel = new JLabel();
@@ -27,18 +31,33 @@ public class VocabularyQuiz extends JFrame {
         resultLabel = new JLabel();
         apiSelector = new JComboBox<>();
         mainMenu = new JComboBox<>();
+        showAnswerButton = new JButton("Show Answer");
+        nextButton = new JButton("Next");
 
         String[] apiOptions = {"API 1", "API 2", "API 3", "API 4", "API 5", "API 6"};
         apiSelector.setModel(new DefaultComboBoxModel<>(apiOptions));
         apiSelector.setSelectedIndex(0);
 
-        String[] mainMenuOptions = {"Select Action","View Vocabulary", "Take Quiz"};
+        String[] mainMenuOptions = {"Select Action", "View Vocabulary", "Take Quiz"};
         mainMenu.setModel(new DefaultComboBoxModel<>(mainMenuOptions));
 
         mainMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleMainMenuSelection();
+            }
+        });
+        showAnswerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showAnswer();
+            }
+        });
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                currentIndex++;
+                setNextQuestion();
             }
         });
 
@@ -50,17 +69,18 @@ public class VocabularyQuiz extends JFrame {
         panel.add(inputField);
         panel.add(submitButton);
         panel.add(resultLabel);
+        panel.add(showAnswerButton);
+        panel.add(nextButton);
 
         add(panel);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 400);
+        setSize(500, 500);
         setTitle("English Vocabulary");
         setLocationRelativeTo(null);
         setVisible(true);
 
-        loadWordsFromJson();
-        setNextQuestion();
+        hideQuizElements();
     }
 
     private void handleMainMenuSelection() {
@@ -68,12 +88,31 @@ public class VocabularyQuiz extends JFrame {
 
         if ("View Vocabulary".equals(selectedAction)) {
             loadWordsFromJson();
-            showVocabulary(); 
+            showVocabulary();
+            hideQuizElements();
         } else if ("Take Quiz".equals(selectedAction)) {
             currentIndex = 0;
             loadWordsFromJson();
             setNextQuestion();
+            showQuizElements();
         }
+    }
+
+    private void hideQuizElements() {
+        wordLabel.setText("");
+        inputField.setText("");
+        submitButton.setVisible(false);
+        resultLabel.setText("");
+        showAnswerButton.setVisible(false);
+        nextButton.setVisible(false);
+        }
+
+    private void showQuizElements() {
+        inputField.setText("");
+        submitButton.setVisible(true);
+        resultLabel.setText("");
+        showAnswerButton.setVisible(true);
+        nextButton.setVisible(true);
     }
 
     private void showVocabulary() {
@@ -154,11 +193,37 @@ public class VocabularyQuiz extends JFrame {
                     checkAnswer();
                 }
             });
+            showAnswerButton.setEnabled(true);
+            nextButton.setEnabled(false);
+    
         } else {
             wordLabel.setText("Quiz completed!");
             inputField.setEnabled(false);
             submitButton.setEnabled(false);
+            showAnswerButton.setEnabled(false);
+            nextButton.setEnabled(false);
         }
+    }
+
+    private void showAnswer() {
+        Word currentWord = words.get(currentIndex);
+        StringBuilder answerText = new StringBuilder("<html><b>English:</b> " + currentWord.getWord() + "<br>");
+        
+        for (Definition definition : currentWord.getDefinitions()) {
+            answerText.append("<b>").append(definition.getPartOfSpeech()).append(":</b> ").append(definition.getText()).append("<br>");
+        }
+    
+        answerText.append("</html>");
+    
+        JTextPane answerPane = new JTextPane();
+        answerPane.setContentType("text/html");
+        answerPane.setText(answerText.toString());
+        answerPane.setEditable(false);
+    
+        JOptionPane.showMessageDialog(this, answerPane, "Answer", JOptionPane.PLAIN_MESSAGE);
+    
+        showAnswerButton.setEnabled(false);
+        nextButton.setEnabled(true);
     }
 
     private void checkAnswer() {
