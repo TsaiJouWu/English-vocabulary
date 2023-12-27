@@ -108,7 +108,8 @@ public class VocabularyQuiz extends JFrame {
         resultLabel.setText("");
         showAnswerButton.setVisible(false);
         nextButton.setVisible(false);
-        }
+        inputField.setVisible(false); 
+    }
 
     private void showQuizElements() {
         inputField.setText("");
@@ -116,6 +117,7 @@ public class VocabularyQuiz extends JFrame {
         resultLabel.setText("");
         showAnswerButton.setVisible(true);
         nextButton.setVisible(true);
+        inputField.setVisible(true); 
     }
 
     private void showVocabulary() {
